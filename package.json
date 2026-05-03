@@ -32,7 +32,8 @@
     "security:check": "node ./scripts/check-repo-security.mjs",
     "validate:staging": "node ./scripts/validate-staging.mjs",
     "load:test:launch": "k6 run ./load/k6/launch-2x.js",
-    "validate:launch-artifacts": "npm run security:check && npm run test:e2e:typecheck"
+    "validate:launch-artifacts": "npm run security:check && npm run test:e2e:typecheck",
+    "compose:up": "docker compose --env-file .env.docker up -d --build"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.650.0",
