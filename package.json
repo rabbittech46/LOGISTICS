@@ -1,0 +1,110 @@
+{
+  "name": "@rabbittech/logistics",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "dev:api": "tsx watch src/api/server.ts",
+    "dev:tracking": "tsx watch src/tracking/server.ts",
+    "dev:matching": "tsx watch src/workers/matching.worker.ts",
+    "dev:notification": "tsx watch src/workers/notification.worker.ts",
+    "dev:analytics": "tsx watch src/workers/analytics.worker.ts",
+    "dev:payment": "tsx watch src/workers/payment.worker.ts",
+    "start:api": "node dist/api/server.js",
+    "start:tracking": "node dist/tracking/server.js",
+    "start:worker": "node dist/workers/entry.js",
+    "lint": "eslint src --max-warnings 0",
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --selectProjects unit --runInBand --detectOpenHandles",
+    "test:integration": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --selectProjects integration --runInBand --detectOpenHandles",
+    "test:all": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js",
+    "test:coverage": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --selectProjects unit --runInBand --detectOpenHandles --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report",
+    "test:e2e:typecheck": "tsc --noEmit -p tsconfig.playwright.json",
+    "db:bootstrap": "node ./scripts/run-migrations.mjs bootstrap",
+    "db:migrate": "node ./scripts/run-migrations.mjs up",
+    "db:migrate:status": "node ./scripts/run-migrations.mjs status",
+    "security:check": "node ./scripts/check-repo-security.mjs",
+    "validate:staging": "node ./scripts/validate-staging.mjs",
+    "load:test:launch": "k6 run ./load/k6/launch-2x.js",
+    "validate:launch-artifacts": "npm run security:check && npm run test:e2e:typecheck"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.650.0",
+    "@aws-sdk/s3-request-presigner": "^3.650.0",
+    "@elastic/elasticsearch": "^8.16.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.54.0",
+    "@opentelemetry/exporter-metrics-otlp-http": "^0.57.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.57.0",
+    "@opentelemetry/sdk-node": "^0.57.0",
+    "@opentelemetry/semantic-conventions": "^1.28.0",
+    "@socket.io/redis-adapter": "^8.3.0",
+    "bcryptjs": "^2.4.3",
+    "bullmq": "^5.20.0",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "express": "^5.0.1",
+    "helmet": "^8.0.0",
+    "ioredis": "^5.4.1",
+    "jsonwebtoken": "^9.0.2",
+    "kafkajs": "^2.2.4",
+    "pg": "^8.13.0",
+    "pg-copy-streams": "^6.0.6",
+    "pino": "^9.5.0",
+    "pino-http": "^10.3.0",
+    "prom-client": "^15.1.0",
+    "socket.io": "^4.8.0",
+    "socket.io-client": "^4.8.0",
+    "stripe": "^17.3.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@playwright/test": "^1.54.2",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/compression": "^1.7.5",
+    "@types/cookie-parser": "^1.4.7",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/jest": "^29.5.0",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^20.14.0",
+    "@types/pg": "^8.11.6",
+    "dotenv": "^16.6.1",
+    "eslint": "^9.0.0",
+    "globals": "^16.4.0",
+    "jest": "^29.7.0",
+    "testcontainers": "^11.13.0",
+    "ts-jest": "^29.4.9",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.0",
+    "typescript-eslint": "^8.46.2",
+    "typescript": "^5.6.0"
+  },
+  "overrides": {
+    "archiver-utils": {
+      "lodash": "4.18.1"
+    },
+    "minimatch@3": {
+      "brace-expansion": "1.1.13"
+    },
+    "minimatch@5": {
+      "brace-expansion": "2.0.3"
+    },
+    "minimatch@9": {
+      "brace-expansion": "2.0.3"
+    },
+    "router": {
+      "path-to-regexp": "8.4.2"
+    },
+    "ts-jest": {
+      "handlebars": "4.7.9"
+    }
+  }
+}

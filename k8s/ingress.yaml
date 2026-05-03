@@ -1,0 +1,57 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Ingress — TLS termination with Let's Encrypt + path-based routing
+# ─────────────────────────────────────────────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: logistics-ingress
+  namespace: logistics
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/rate-limit: "200"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+spec:
+  tls:
+    - hosts:
+        - api.rabbittech.io
+        - tracking.rabbittech.io
+      secretName: rabbittech-tls
+  rules:
+    - host: api.rabbittech.io
+      http:
+        paths:
+          - path: /api/v1
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  number: 80
+    - host: tracking.rabbittech.io
+      http:
+        paths:
+          - path: /socket.io
+            pathType: Prefix
+            backend:
+              service:
+                name: tracking
+                port:
+                  number: 80
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tracking
+                port:
+                  number: 80

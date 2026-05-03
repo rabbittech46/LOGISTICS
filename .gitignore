@@ -1,0 +1,60 @@
+# Dependencies
+node_modules/
+dist/
+coverage/
+
+# Build & generated output
+build/
+out/
+.next/
+.parcel-cache/
+.turbo/
+.cache/
+.playwright/
+playwright-report/
+test-results/
+
+# Local environment files
+.env
+.env.*
+!.env.example
+!.env.docker.example
+!.env.playwright.example
+
+# Secrets — NEVER commit
+secrets/*
+!secrets/README.md
+nginx/certs/*
+!nginx/certs/README.md
+
+# Docker volumes
+pgdata/
+redis-data/
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+Icon
+
+# IDE / editor
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*.tmp
+*.temp
+
+# Logs
+*.log
+nginx/logs/
+
+# Mobile / native app artifacts
+web-app/android/build/
+web-app/android/app/build/
+web-app/android/.gradle/
+web-app/android/.cxx/

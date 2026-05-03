@@ -1,0 +1,201 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "title": "Request Rate (req/s)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(logistics_http_request_total[5m])) by (service)",
+          "legendFormat": "{{ service }}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        }
+      }
+    },
+    {
+      "title": "Error Rate (5xx %)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(logistics_http_request_total{status_code=~\"5..\"}[5m])) by (service) / sum(rate(logistics_http_request_total[5m])) by (service) * 100",
+          "legendFormat": "{{ service }}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "steps": [
+              { "value": 0, "color": "green" },
+              { "value": 1, "color": "yellow" },
+              { "value": 5, "color": "red" }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "P50 / P95 / P99 Latency",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(logistics_http_request_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "P50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(logistics_http_request_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "P95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(logistics_http_request_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "P99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s" }
+      }
+    },
+    {
+      "title": "Active WebSocket Connections",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 8 },
+      "targets": [
+        {
+          "expr": "sum(logistics_active_websocket_connections)"
+        }
+      ]
+    },
+    {
+      "title": "GPS Pings / sec",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(logistics_gps_pings_ingested_total[5m]))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "ops" }
+      }
+    },
+    {
+      "title": "Loads Created / Matched / Delivered",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "targets": [
+        {
+          "expr": "sum(rate(logistics_loads_created_total[5m])) * 60",
+          "legendFormat": "Created/min"
+        },
+        {
+          "expr": "sum(rate(logistics_loads_matched_total[5m])) * 60",
+          "legendFormat": "Matched/min"
+        },
+        {
+          "expr": "sum(rate(logistics_assignments_completed_total[5m])) * 60",
+          "legendFormat": "Delivered/min"
+        }
+      ]
+    },
+    {
+      "title": "Payment Volume",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "targets": [
+        {
+          "expr": "sum(rate(logistics_payment_amount_cents_sum[5m])) * 60 / 100",
+          "legendFormat": "$/min"
+        },
+        {
+          "expr": "sum(rate(logistics_payment_processed_total{status=\"failed\"}[5m]))",
+          "legendFormat": "Failures/s"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "currencyUSD" }
+      }
+    },
+    {
+      "title": "Job Queue Depth",
+      "type": "bargauge",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+      "targets": [
+        {
+          "expr": "logistics_job_queue_depth",
+          "legendFormat": "{{ queue }}"
+        }
+      ]
+    },
+    {
+      "title": "Circuit Breaker Status",
+      "type": "state-timeline",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+      "targets": [
+        {
+          "expr": "logistics_circuit_breaker_state",
+          "legendFormat": "{{ name }} - {{ state }}"
+        }
+      ]
+    },
+    {
+      "title": "DB Connection Pool",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 32 },
+      "targets": [
+        {
+          "expr": "logistics_db_pool_size{type=\"total\"}",
+          "legendFormat": "Total"
+        },
+        {
+          "expr": "logistics_db_pool_size{type=\"idle\"}",
+          "legendFormat": "Idle"
+        },
+        {
+          "expr": "logistics_db_pool_size{type=\"waiting\"}",
+          "legendFormat": "Waiting"
+        }
+      ]
+    },
+    {
+      "title": "Matching Engine Duration",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 32 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(logistics_matching_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "P95"
+        },
+        {
+          "expr": "logistics_match_candidate_count",
+          "legendFormat": "Avg candidates"
+        }
+      ]
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": ["logistics", "production"],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "title": "RabbitTech Logistics — Production Overview",
+  "uid": "logistics-overview"
+}

@@ -1,0 +1,22 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# ConfigMap — shared environment config
+# ─────────────────────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logistics-config
+  namespace: logistics
+data:
+  NODE_ENV: "production"
+  LOG_LEVEL: "info"
+  KAFKA_BROKERS: "kafka-0.kafka-headless.logistics.svc.cluster.local:9092,kafka-1.kafka-headless.logistics.svc.cluster.local:9092,kafka-2.kafka-headless.logistics.svc.cluster.local:9092"
+  ELASTICSEARCH_URL: "http://elasticsearch.logistics.svc.cluster.local:9200"
+  REDIS_URL: "redis://redis-master.logistics.svc.cluster.local:6379/0"
+  DATABASE_URL: "postgresql://logistics_service@postgres-primary.logistics.svc.cluster.local:5432/logistics?schema=logistics&sslmode=require"
+  MATCH_RADIUS_MILES: "150"
+  DEADHEAD_MAX_RATIO: "0.50"
+  BATCH_FLUSH_INTERVAL_MS: "30000"
+  BATCH_FLUSH_SIZE: "500"
+  OFFLINE_THRESHOLD_MS: "180000"
+  AWS_REGION: "us-east-1"
+  S3_POD_BUCKET: "rabbittech-logistics-pod"

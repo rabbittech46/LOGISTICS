@@ -1,0 +1,161 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Prometheus Alert Rules
+# ─────────────────────────────────────────────────────────────────────────────
+groups:
+  # ────────────────────── Service Health ──────────────────────────────────
+  - name: service-health
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(logistics_http_request_total{status_code=~"5.."}[5m])) by (service)
+          / sum(rate(logistics_http_request_total[5m])) by (service) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate on {{ $labels.service }}"
+          description: "5xx error rate is {{ $value | humanizePercentage }} (>5%) for {{ $labels.service }}"
+
+      - alert: HighLatencyP99
+        expr: |
+          histogram_quantile(0.99, sum(rate(logistics_http_request_duration_seconds_bucket[5m])) by (le, service))
+          > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High P99 latency on {{ $labels.service }}"
+          description: "P99 latency is {{ $value | humanizeDuration }} for {{ $labels.service }}"
+
+      - alert: ServiceDown
+        expr: up{job="kubernetes-pods"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.service }} is down"
+
+  # ────────────────────── Business Metrics ────────────────────────────────
+  - name: business-metrics
+    rules:
+      - alert: MatchingEngineStalled
+        expr: rate(logistics_loads_matched_total[15m]) == 0 and logistics_loads_created_total > 10
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Matching engine has not produced matches in 15 minutes"
+
+      - alert: PaymentProcessingFailures
+        expr: |
+          sum(rate(logistics_payment_processed_total{status="failed"}[10m]))
+          / sum(rate(logistics_payment_processed_total[10m])) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Payment failure rate exceeds 10%"
+
+      - alert: GPSPingIngestionDrop
+        expr: |
+          rate(logistics_gps_pings_ingested_total[5m]) < 0.1
+          and rate(logistics_active_truck_connections[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "GPS ping ingestion rate dropped despite active connections"
+
+  # ────────────────────── Infrastructure ──────────────────────────────────
+  - name: infrastructure
+    rules:
+      - alert: CircuitBreakerOpen
+        expr: logistics_circuit_breaker_state{state="open"} == 1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Circuit breaker {{ $labels.name }} is OPEN"
+
+      - alert: HighQueueDepth
+        expr: logistics_job_queue_depth > 1000
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Job queue {{ $labels.queue }} depth exceeds 1000"
+
+      - alert: DatabaseConnectionPoolExhausted
+        expr: logistics_db_pool_size{type="waiting"} > 20
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database connection pool has >20 waiting clients"
+
+      - alert: RedisHighMemory
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis memory usage above 90%"
+
+      - alert: KafkaConsumerLag
+        expr: kafka_consumergroup_lag_sum > 10000
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Kafka consumer group {{ $labels.consumergroup }} lag exceeds 10k"
+
+      - alert: KafkaConsumerLagCritical
+        expr: kafka_consumergroup_lag_sum > 50000
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Kafka consumer group {{ $labels.consumergroup }} lag exceeds 50k — data processing severely behind"
+
+      - alert: PaymentReconciliationStuck
+        expr: |
+          count(logistics_payments_status{status="RELEASED"} > 0) > 5
+        for: 15m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Multiple payments stuck in RELEASED state — Stripe capture may be failing"
+
+      - alert: DLQMessagesAccumulating
+        expr: |
+          sum(kafka_topic_partition_current_offset{topic=~".*\\.dlq"}) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Dead Letter Queue has unprocessed messages"
+
+      - alert: GPSBatchBackpressure
+        expr: logistics_gps_batch_pending > 400000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "GPS batch buffer approaching backpressure limit (500k)"
+
+      - alert: PodRestartLooping
+        expr: |
+          increase(kube_pod_container_status_restarts_total{namespace="logistics"}[1h]) > 3
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Pod {{ $labels.pod }} is restart-looping (>3 restarts/hour)"
+
+      - alert: DiskSpaceLow
+        expr: node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"} < 0.15
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Node {{ $labels.instance }} has less than 15% disk space"

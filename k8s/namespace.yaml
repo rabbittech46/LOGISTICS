@@ -1,0 +1,10 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Namespace — logistics
+# ─────────────────────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: logistics
+  labels:
+    app.kubernetes.io/part-of: rabbittech-logistics
+    istio-injection: enabled

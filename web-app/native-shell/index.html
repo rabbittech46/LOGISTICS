@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#081121" />
+    <title>RabbitTech Logistics</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at top, rgba(36, 161, 255, 0.24), transparent 42%),
+          linear-gradient(180deg, #081121 0%, #040814 100%);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        color: #f8fbff;
+      }
+
+      main {
+        width: min(100%, 440px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 28px;
+        padding: 28px;
+        background: rgba(7, 16, 30, 0.84);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.34);
+        backdrop-filter: blur(18px);
+      }
+
+      .brand {
+        width: 56px;
+        height: 56px;
+        display: grid;
+        place-items: center;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #36c4ff, #1a6cff);
+        font-weight: 800;
+        letter-spacing: 0.04em;
+      }
+
+      h1 {
+        margin: 20px 0 10px;
+        font-size: 1.9rem;
+        line-height: 1.1;
+      }
+
+      p {
+        margin: 0;
+        color: rgba(232, 240, 255, 0.76);
+        line-height: 1.6;
+      }
+
+      code {
+        display: inline-block;
+        margin-top: 16px;
+        padding: 10px 12px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.06);
+        color: #9dd8ff;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="brand">RT</div>
+      <h1>Native shell ready</h1>
+      <p>
+        Set the Capacitor server URL to a deployed RabbitTech Logistics web app before building Android packages.
+      </p>
+      <code>CAPACITOR_SERVER_URL=https://app.rabbittech.example</code>
+    </main>
+  </body>
+</html>

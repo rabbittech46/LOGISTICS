@@ -1,0 +1,228 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Worker Deployments — matching, notification, analytics, payment
+# ─────────────────────────────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-matching
+  namespace: logistics
+  labels:
+    app: worker-matching
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: worker-matching
+  template:
+    metadata:
+      labels:
+        app: worker-matching
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+    spec:
+      containers:
+        - name: worker
+          image: ghcr.io/rabbittech/logistics-worker:latest
+          envFrom:
+            - configMapRef:
+                name: logistics-config
+          env:
+            - name: WORKER_TYPE
+              value: matching
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: logistics-secrets
+                  key: DB_PASSWORD
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-notification
+  namespace: logistics
+  labels:
+    app: worker-notification
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: worker-notification
+  template:
+    metadata:
+      labels:
+        app: worker-notification
+    spec:
+      containers:
+        - name: worker
+          image: ghcr.io/rabbittech/logistics-worker:latest
+          envFrom:
+            - configMapRef:
+                name: logistics-config
+          env:
+            - name: WORKER_TYPE
+              value: notification
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-analytics
+  namespace: logistics
+  labels:
+    app: worker-analytics
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: worker-analytics
+  template:
+    metadata:
+      labels:
+        app: worker-analytics
+    spec:
+      containers:
+        - name: worker
+          image: ghcr.io/rabbittech/logistics-worker:latest
+          envFrom:
+            - configMapRef:
+                name: logistics-config
+          env:
+            - name: WORKER_TYPE
+              value: analytics
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: logistics-secrets
+                  key: DB_PASSWORD
+            - name: ELASTICSEARCH_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: logistics-secrets
+                  key: ELASTICSEARCH_API_KEY
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-payment
+  namespace: logistics
+  labels:
+    app: worker-payment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: worker-payment
+  template:
+    metadata:
+      labels:
+        app: worker-payment
+    spec:
+      containers:
+        - name: worker
+          image: ghcr.io/rabbittech/logistics-worker:latest
+          envFrom:
+            - configMapRef:
+                name: logistics-config
+          env:
+            - name: WORKER_TYPE
+              value: payment
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: logistics-secrets
+                  key: DB_PASSWORD
+            - name: STRIPE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: logistics-secrets
+                  key: STRIPE_SECRET_KEY
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+---
+# ─────────────────────────────────────────────────────────────────────────────
+# Worker PodDisruptionBudgets
+# ─────────────────────────────────────────────────────────────────────────────
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: worker-matching-pdb
+  namespace: logistics
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: worker-matching
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: worker-payment-pdb
+  namespace: logistics
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: worker-payment
+---
+# ─────────────────────────────────────────────────────────────────────────────
+# Worker HPA — auto-scale matching workers based on queue depth
+# ─────────────────────────────────────────────────────────────────────────────
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: worker-matching-hpa
+  namespace: logistics
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: worker-matching
+  minReplicas: 2
+  maxReplicas: 10
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 120
+  metrics:
+    - type: Pods
+      pods:
+        metric:
+          name: logistics_job_queue_depth
+        target:
+          type: AverageValue
+          averageValue: "100"

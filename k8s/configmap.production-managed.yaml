@@ -1,0 +1,26 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# ConfigMap — production managed-services overlay
+# Apply this instead of k8s/configmap.yaml when the data plane is hosted on
+# managed services (RDS, ElastiCache, MSK, OpenSearch).
+# ─────────────────────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logistics-config
+  namespace: logistics
+data:
+  NODE_ENV: "production"
+  LOG_LEVEL: "info"
+  DATABASE_URL: "postgresql://logistics_service@rabbittech-logistics.cluster-xxxxxxxx.us-east-1.rds.amazonaws.com:5432/logistics?schema=logistics&sslmode=require"
+  REDIS_URL: "rediss://rabbittech-logistics.xxxxxx.use1.cache.amazonaws.com:6379/0"
+  KAFKA_BROKERS: "b-1.rabbittech-logistics.xxxxxx.c3.kafka.us-east-1.amazonaws.com:9098,b-2.rabbittech-logistics.xxxxxx.c3.kafka.us-east-1.amazonaws.com:9098,b-3.rabbittech-logistics.xxxxxx.c3.kafka.us-east-1.amazonaws.com:9098"
+  ELASTICSEARCH_URL: "https://search-rabbittech-logistics-xxxxxxxx.us-east-1.es.amazonaws.com"
+  FEATURE_FLAGS_JSON: '{"payments":true,"realtimeTracking":true}'
+  JWT_ACTIVE_KID: "2026-q2"
+  MATCH_RADIUS_MILES: "150"
+  DEADHEAD_MAX_RATIO: "0.50"
+  BATCH_FLUSH_INTERVAL_MS: "30000"
+  BATCH_FLUSH_SIZE: "500"
+  OFFLINE_THRESHOLD_MS: "180000"
+  AWS_REGION: "us-east-1"
+  S3_POD_BUCKET: "rabbittech-logistics-pod"

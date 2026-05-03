@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">RabbitTech Logistics</string>
+    <string name="title_activity_main">RabbitTech Logistics</string>
+    <string name="package_name">com.rabbittech.logistics</string>
+    <string name="custom_url_scheme">com.rabbittech.logistics</string>
+</resources>
